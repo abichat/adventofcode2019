@@ -10,37 +10,21 @@ all_edges <- unique(unlist(el))
 
 #### First puzzle #### 
 
-n_orbits <- function(edge) {
+indirect_orbits <- function(edge) {
   sub_el <- el[el$V2 == edge,]
   if (nrow(sub_el) == 0) {
-    return(0)
+    return(c())
   } else {
-    return(1 + n_orbits(sub_el$V1))
+    return(c(edge, indirect_orbits(sub_el$V1)))
   }
 }
 
-sum(sapply(all_edges, n_orbits))
+sum(sapply(sapply(all_edges, indirect_orbits), length))
 
 
 #### Second puzzle ####
 
-am <- matrix(0, nrow = length(all_edges), ncol = length(all_edges),
-             dimnames = list(all_edges, all_edges))
+io_YOU <- indirect_orbits("YOU") # inspired from @RLesur
+io_SAN <- indirect_orbits("SAN")
 
-fill_am <- function(x) {
-  am[x[1], x[2]] <<- 1
-  am[x[2], x[1]] <<- 1
-  invisible()
-}
-
-invisible(apply(el, 1, fill_am))
-
-amp <- am
-i <- 1
-
-while(amp["YOU", "SAN"] == 0){
-  amp <- am %*% amp
-  i <- i + 1
-}
-
-i - 2
+length(union(setdiff(io_YOU, io_SAN), setdiff(io_SAN, io_YOU))) - 2
